@@ -19,14 +19,12 @@ public class ProfilePool {
         profiles.add(profile);
     }
 
-    public void score(Criteria criteria) {
-        for (Profile profile : profiles)
-            profile.matches(criteria);
-    }
-
-    public List<Profile> ranked() {
-        Collections.sort(profiles, (p1, p2) -> ((Integer) p2.score()).compareTo(p1.score()));// score
-                                                                                             // desc.
+    public List<Profile> ranked(Criteria criteria) {
+        Collections.sort(profiles, (p1, p2) -> { // score desc.
+            int score1 = p1.getMatchSet(criteria).getScore();
+            int score2 = p2.getMatchSet(criteria).getScore();
+            return Integer.valueOf(score2).compareTo(Integer.valueOf(score1));
+        });
         return profiles;
     }
 }
