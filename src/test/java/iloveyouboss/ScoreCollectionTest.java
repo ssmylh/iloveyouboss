@@ -7,12 +7,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class ScoreCollectionTest {
-	ScoreCollection collection;
+    ScoreCollection collection;
 
-	@Before
-	public void create() {
-		collection = new ScoreCollection();
-	}
+    @Before
+    public void create() {
+        collection = new ScoreCollection();
+    }
 
     @Test
     public void answersArithmeticMeanOfTwoNumbers() {
@@ -25,19 +25,19 @@ public class ScoreCollectionTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void throwsExceptionWhenAddingNull() {
-    	collection.add(null);
+        collection.add(null);
     }
 
     @Test
     public void answersZeroWhenNoElementsAdded() {
-    	assertThat(collection.arithmeticMean(), is(0));
+        assertThat(collection.arithmeticMean(), is(0));
     }
 
     @Test
     public void dealsWithIntegerOverflow() {
-    	collection.add(() -> Integer.MAX_VALUE);
-    	collection.add(() -> 1);
+        collection.add(() -> Integer.MAX_VALUE);
+        collection.add(() -> 1);
 
-    	assertThat(collection.arithmeticMean(), is(1073741824));
+        assertThat(collection.arithmeticMean(), is(1073741824));
     }
 }
