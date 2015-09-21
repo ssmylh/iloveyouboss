@@ -2,6 +2,7 @@ package util;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static util.ContainsMatches.*;
 
 // text courtesy of Herman Melville (Moby Dick) from
 // http://www.gutenberg.org/cache/epub/2701/pg2701.txt
@@ -9,7 +10,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.List;
 import java.util.logging.Level;
 
 import org.junit.Test;
@@ -30,11 +30,9 @@ public class SearchTest {
         search.setSurroundingCharacterCount(10);
         search.execute();
         assertFalse(search.errored());
-        List<Match> matches = search.getMatches();
-        assertTrue(matches.size() >= 1);
-        Match match = matches.get(0);
-        assertThat(match.searchString, equalTo("practical joke"));
-        assertThat(match.surroundingContext, equalTo("or a vast practical joke, though t"));
+        assertThat(search.getMatches(), is(containsMatches(
+                new Match[] { new Match("1", "practical joke", "or a vast practical joke, though t") })));
+
         stream.close();
 
         // negative
@@ -42,7 +40,7 @@ public class SearchTest {
         InputStream inputStream = connection.getInputStream();
         search = new Search(inputStream, "smelt", "http://bit.ly/15sYPA7");
         search.execute();
-        assertThat(search.getMatches().size(), equalTo(0));
+        assertTrue(search.getMatches().isEmpty());
         stream.close();
     }
 }
