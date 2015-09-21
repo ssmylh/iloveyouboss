@@ -7,6 +7,7 @@ import static util.ContainsMatches.*;
 // text courtesy of Herman Melville (Moby Dick) from
 // http://www.gutenberg.org/cache/epub/2701/pg2701.txt
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
@@ -39,7 +40,6 @@ public class SearchTest {
 
         search.execute();
 
-        //assertFalse(search.errored()); TODO adds test later.
         assertThat(search.getMatches(), is(containsMatches(
                 new Match[] { new Match(ANY_TITLE, "search term", "1234567890search term1234567890") })));
     }
@@ -56,5 +56,34 @@ public class SearchTest {
         search.execute();
 
         assertTrue(search.getMatches().isEmpty());
+    }
+
+    @Test
+    public void returnsErroredWhenUnableToReadStream() {
+        stream = createStreamThrowingErrorWhenRead();
+        Search search = new Search(stream, "", "");
+
+        search.execute();
+
+        assertTrue(search.errored());
+    }
+
+    @Test
+    public void erroredReturnsFalseWhenReadSucceeds() throws Exception {
+        stream = streamOn("");
+        Search search = new Search(stream, "", "");
+
+        search.execute();
+
+        assertFalse(search.errored());
+    }
+
+    private InputStream createStreamThrowingErrorWhenRead() {
+        return new InputStream() {
+            @Override
+            public int read() throws IOException {
+                throw new IOException();
+            }
+        };
     }
 }
