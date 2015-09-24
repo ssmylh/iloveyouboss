@@ -4,97 +4,126 @@ import static org.junit.Assert.*;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
 
+@RunWith(Enclosed.class)
 public class ProfileTest {
-    private Profile profile;
-    private BooleanQuestion questionIsThereRelocation;
-    private Answer answerThereIsRelocation;
-    private Answer answerThereIsNotRelocation;
-    private BooleanQuestion questionReimbursesTuition;
-    private Answer answerDoesNotReimburseTuition;
-    private Answer answerReimburseTuition;
-    private Criteria criteria;
+    public static class MatchesCriterion {
+        private Profile profile;
+        private BooleanQuestion questionIsThereRelocation;
+        private Answer answerThereIsRelocation;
+        private Answer answerThereIsNotRelocation;
+        private BooleanQuestion questionReimbursesTuition;
+        private Answer answerDoesNotReimburseTuition;
+        private Answer answerReimburseTuition;
 
-    @Before
-    public void createProfile() {
-        profile = new Profile();
+        @Before
+        public void createProfile() {
+            profile = new Profile();
+        }
+
+        @Before
+        public void createQuestion() {
+            questionIsThereRelocation = new BooleanQuestion(1, "Relocation package ?");
+            answerThereIsRelocation = new Answer(questionIsThereRelocation, Bool.TRUE);
+            answerThereIsNotRelocation = new Answer(questionIsThereRelocation, Bool.FALSE);
+
+            questionReimbursesTuition = new BooleanQuestion(1, "Reimburses tuition ?");
+            answerReimburseTuition = new Answer(questionReimbursesTuition, Bool.TRUE);
+            answerDoesNotReimburseTuition = new Answer(questionReimbursesTuition, Bool.FALSE);
+        }
+
+        @Test
+        public void trueWhenMatchesSoleAnswer() {
+            profile.add(answerThereIsRelocation);
+            Criterion criterion = new Criterion(answerThereIsRelocation, Weight.Important);
+
+            assertTrue(profile.matches(criterion));
+        }
+
+        @Test
+        public void falseWhenNoMatchingAnswerContained() {
+            profile.add(answerThereIsNotRelocation);
+            Criterion criterion = new Criterion(answerThereIsRelocation, Weight.Important);
+
+            assertFalse(profile.matches(criterion));
+        }
+
+        @Test
+        public void trueWhenOneOfMultipleAnswerMatches() {
+            profile.add(answerThereIsRelocation);
+            profile.add(answerDoesNotReimburseTuition);
+            Criterion criterion = new Criterion(answerThereIsRelocation, Weight.Important);
+
+            assertTrue(profile.matches(criterion));
+        }
+
+        @Test
+        public void trueWhenForAnyDontCare() {
+            profile.add(answerDoesNotReimburseTuition);
+            Criterion criterion = new Criterion(answerReimburseTuition, Weight.DontCare);
+
+            assertTrue(profile.matches(criterion));
+        }
     }
 
-    @Before
-    public void createQuestion() {
-        questionIsThereRelocation = new BooleanQuestion(1, "Relocation package ?");
-        answerThereIsRelocation = new Answer(questionIsThereRelocation, Bool.TRUE);
-        answerThereIsNotRelocation = new Answer(questionIsThereRelocation, Bool.FALSE);
+    public static class MatchesCriteria {
+        private Profile profile;
+        private BooleanQuestion questionIsThereRelocation;
+        private Answer answerThereIsRelocation;
+        private BooleanQuestion questionReimbursesTuition;
+        private Answer answerDoesNotReimburseTuition;
+        private Answer answerReimburseTuition;
+        private Criteria criteria;
 
-        questionReimbursesTuition = new BooleanQuestion(1, "Reimburses tuition ?");
-        answerReimburseTuition = new Answer(questionReimbursesTuition, Bool.TRUE);
-        answerDoesNotReimburseTuition = new Answer(questionReimbursesTuition, Bool.FALSE);
-    }
+        @Before
+        public void createProfile() {
+            profile = new Profile();
+        }
 
-    @Before
-    public void createCriteria() {
-        criteria = new Criteria();
-    }
+        @Before
+        public void createQuestion() {
+            questionIsThereRelocation = new BooleanQuestion(1, "Relocation package ?");
+            answerThereIsRelocation = new Answer(questionIsThereRelocation, Bool.TRUE);
 
-    @Test
-    public void matchesProfileContainsMatchingAnswer() {
-        profile.add(answerThereIsRelocation);
-        Criterion criterion = new Criterion(answerThereIsRelocation, Weight.Important);
+            questionReimbursesTuition = new BooleanQuestion(1, "Reimburses tuition ?");
+            answerReimburseTuition = new Answer(questionReimbursesTuition, Bool.TRUE);
+            answerDoesNotReimburseTuition = new Answer(questionReimbursesTuition, Bool.FALSE);
+        }
 
-        assertTrue(profile.matches(criterion));
-    }
+        @Before
+        public void createCriteria() {
+            criteria = new Criteria();
+        }
 
-    @Test
-    public void doesNotMatchWhenNoMatchingAnswer() {
-        profile.add(answerThereIsNotRelocation);
-        Criterion criterion = new Criterion(answerThereIsRelocation, Weight.Important);
+        @Test
+        public void falseWhenNoneOfMultipleCriteriaMatch() {
+            profile.add(answerDoesNotReimburseTuition);
+            Criteria criteria = new Criteria();
+            criteria.add(new Criterion(answerThereIsRelocation, Weight.Important));
+            criteria.add(new Criterion(answerReimburseTuition, Weight.Important));
 
-        assertFalse(profile.matches(criterion));
-    }
+            assertFalse(profile.matches(criteria));
+        }
 
-    @Test
-    public void matchesWhenContainsMultipleAnswers() {
-        profile.add(answerThereIsRelocation);
-        profile.add(answerDoesNotReimburseTuition);
-        Criterion criterion = new Criterion(answerThereIsRelocation, Weight.Important);
+        @Test
+        public void trueWhenAnyOfMultipleCriteriaMatch() {
+            profile.add(answerThereIsRelocation);
+            criteria.add(new Criterion(answerThereIsRelocation, Weight.Important));
+            criteria.add(new Criterion(answerReimburseTuition, Weight.Important));
 
-        assertTrue(profile.matches(criterion));
-    }
+            assertTrue(profile.matches(criteria));
+        }
 
-    @Test
-    public void doesNotMatchWhenNoneOfMultipleCriteriaMatch() {
-        profile.add(answerDoesNotReimburseTuition);
-        Criteria criteria = new Criteria();
-        criteria.add(new Criterion(answerThereIsRelocation, Weight.Important));
-        criteria.add(new Criterion(answerReimburseTuition, Weight.Important));
+        @Test
+        public void falseWhenAnyMustMeetCriteriaNotMet() {
+            profile.add(answerThereIsRelocation);
+            profile.add(answerDoesNotReimburseTuition);
+            criteria.add(new Criterion(answerThereIsRelocation, Weight.Important));
+            criteria.add(new Criterion(answerReimburseTuition, Weight.MustMatch));
 
-        assertFalse(profile.matches(criteria));
-    }
-
-    @Test
-    public void matchesWhenAnyOfMultipleCriteriaMatch() {
-        profile.add(answerThereIsRelocation);
-        criteria.add(new Criterion(answerThereIsRelocation, Weight.Important));
-        criteria.add(new Criterion(answerReimburseTuition, Weight.Important));
-
-        assertTrue(profile.matches(criteria));
-    }
-
-    @Test
-    public void doesNotMatchWhenAnyMustMeetCriteriaNotMet() {
-        profile.add(answerThereIsRelocation);
-        profile.add(answerDoesNotReimburseTuition);
-        criteria.add(new Criterion(answerThereIsRelocation, Weight.Important));
-        criteria.add(new Criterion(answerReimburseTuition, Weight.MustMatch));
-
-        assertFalse(profile.matches(criteria));
-    }
-
-    @Test
-    public void matchesWhenCriterionIsDontCare() {
-        profile.add(answerDoesNotReimburseTuition);
-        Criterion criterion = new Criterion(answerReimburseTuition, Weight.DontCare);
-
-        assertTrue(profile.matches(criterion));
+            assertFalse(profile.matches(criteria));
+        }
     }
 }
