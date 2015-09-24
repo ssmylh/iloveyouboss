@@ -12,6 +12,8 @@ public class ProfileTest {
     private Answer answerThereIsNotRelocation;
     private BooleanQuestion questionReimbursesTuition;
     private Answer answerDoesNotReimburseTuition;
+    private Answer answerReimburseTuition;
+    private Criteria criteria;
 
     @Before
     public void createProfile() {
@@ -25,7 +27,13 @@ public class ProfileTest {
         answerThereIsNotRelocation = new Answer(questionIsThereRelocation, Bool.FALSE);
 
         questionReimbursesTuition = new BooleanQuestion(1, "Reimburses tuition ?");
+        answerReimburseTuition = new Answer(questionReimbursesTuition, Bool.TRUE);
         answerDoesNotReimburseTuition = new Answer(questionReimbursesTuition, Bool.FALSE);
+    }
+
+    @Before
+    public void createCriteria() {
+        criteria = new Criteria();
     }
 
     @Test
@@ -66,5 +74,36 @@ public class ProfileTest {
         boolean result = profile.matches(criterion);
 
         assertTrue(result);
+    }
+
+    @Test
+    public void doesNotMatchWhenNoneOfMultipleCriteriaMatch() {
+        profile.add(answerDoesNotReimburseTuition);
+        Criteria criteria = new Criteria();
+        criteria.add(new Criterion(answerThereIsRelocation, Weight.Important));
+        criteria.add(new Criterion(answerReimburseTuition, Weight.Important));
+
+        boolean result = profile.matches(criteria);
+
+        assertFalse(result);
+    }
+
+    @Test
+    public void matchesWhenAnyOfMultipleCriteriaMatch() {
+        profile.add(answerThereIsRelocation);
+        criteria.add(new Criterion(answerThereIsRelocation, Weight.Important));
+        criteria.add(new Criterion(answerReimburseTuition, Weight.Important));
+
+        assertTrue(profile.matches(criteria));
+    }
+
+    @Test
+    public void doesNotMatchWhenAnyMustMeetCriteriaNotMet() {
+        profile.add(answerThereIsRelocation);
+        profile.add(answerDoesNotReimburseTuition);
+        criteria.add(new Criterion(answerThereIsRelocation, Weight.Important));
+        criteria.add(new Criterion(answerReimburseTuition, Weight.MustMatch));
+
+        assertFalse(profile.matches(criteria));
     }
 }
