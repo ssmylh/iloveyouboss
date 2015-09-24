@@ -7,6 +7,10 @@ public class Profile {
     private Map<String, Answer> answers = new HashMap<>();
 
     public boolean matches(Criterion criterion) {
+        if (criterion.getWeight() == Weight.DontCare) {
+            return true;
+        }
+
         Answer answer = getMatcingProfileAnswer(criterion);
         return criterion.getAnswer().match(answer);
     }
