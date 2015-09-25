@@ -1,12 +1,18 @@
 package iloveyouboss;
 
 public class MatchSet {
+    private String profileName;
     private AnswerCollection answers;
     private Criteria criteria;
 
-    public MatchSet(AnswerCollection answers, Criteria criteria) {
+    public MatchSet(String profileName, AnswerCollection answers, Criteria criteria) {
+        this.profileName = profileName;
         this.answers = answers;
         this.criteria = criteria;
+    }
+
+    public String getProfileName() {
+        return profileName;
     }
 
     public int getScore() {

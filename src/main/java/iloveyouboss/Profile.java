@@ -28,7 +28,7 @@ public class Profile {
     }
 
     public MatchSet getMatchSet(Criteria criteria) {
-        return new MatchSet(answers, criteria);
+        return new MatchSet(name, answers, criteria);
     }
 
     public List<Answer> find(Predicate<Answer> pred) {
