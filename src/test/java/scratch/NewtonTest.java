@@ -1,10 +1,10 @@
 package scratch;
 
+import org.junit.Test;
+
 import static java.lang.Math.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-
-import org.junit.Test;
 
 public class NewtonTest {
     static class Newton {
@@ -13,12 +13,13 @@ public class NewtonTest {
 
         public static double squareRoot(double n) {
             double approx = n;
-            while (abs(approx - n / approx) > TOLERANCE * approx) {// abs(1 -
-                                                                   // n/Xn^2) >
-                                                                   // TOLERANCE
+            while (abs(approx - n / approx) > TOLERANCE * approx) {// abs(1 - n/Xn^2) > TOLERANCE
+                // f(x) = x^2 - n
+                // f'(x) = 2x
+                //
                 // Xn+1 = (n / Xn + Xn) / 2;
-                // = (n + Xn^2) / 2Xn
-                // = Xn - (Xn^2 - 2)/Xn
+                // = Xn - Xn/2 + n/(2Xn)
+                // = Xn - (Xn^2 - n)/2Xn
                 approx = (n / approx + approx) / 2.0;
             }
             return approx;
